@@ -51,6 +51,7 @@ fun HoloFoilPanel(
             Modifier.pointerInput(scratch) {
               awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
+                scratch.setBounds(size.width, size.height, ScratchWidth.toPx())
                 scratch.start(down.position)
                 down.consume()
                 do {

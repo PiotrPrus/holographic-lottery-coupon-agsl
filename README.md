@@ -21,7 +21,8 @@ which does it with Canvas layers and blend modes; this takes the single-shader r
 | `sensor/DeviceTilt.kt` | `rememberDeviceTilt()` — `TYPE_GRAVITY` (accelerometer fallback), low-pass smoothed into `Tilt(roll, pitch)` in ~[-1, 1]. Registered only while RESUMED. |
 | `holo/HoloFoilShader.kt` | The AGSL source. Two uniforms: `uResolution`, `uTilt`. |
 | `holo/HoloFoilPanel.kt` | Compose box filled with the shader. Tilt is read inside `onDrawWithContent`, so sensor updates redraw without recomposing. Owns the scratch gesture. |
-| `holo/ScratchState.kt` | Accumulates finger strokes into a `Path`, with a `revision` counter as the draw-phase invalidation signal. |
+| `holo/ScratchState.kt` | Accumulates finger strokes into a `Path`, with a `revision` counter as the draw-phase invalidation signal. Also publishes the live fingertip position for the dust. |
+| `holo/ScratchDust.kt` | Aluminium flecks thrown off under the finger, via [ParticleEmitter](https://github.com/PiotrPrus/ParticleEmitter). |
 | `ui/CouponScreen.kt` | The coupon card + `graphicsLayer` perspective tilt + a roll/pitch readout. |
 
 ### Shader layers
@@ -48,6 +49,39 @@ events are replayed (`change.historical`) so fast swipes don't leave gaps, and a
 writes a zero-length segment that the round cap turns into a dot.
 
 `ScratchWidth` (46.dp, ~a fingertip) controls how much comes off per stroke.
+
+### Scratch dust
+
+Real foil sheds grit as it comes off, so scratching emits particles under the fingertip using
+[ParticleEmitter](https://github.com/PiotrPrus/ParticleEmitter)'s `CanvasParticleEmitter`.
+
+`ScratchState` publishes the live fingertip position; `ScratchDust` is the only composable that
+reads it, so the per-frame position updates recompose the emitter config and nothing else. The
+emitter captures its config with `rememberUpdatedState`, which means moving `emitterCenter` every
+frame makes the source follow the finger. Emission is switched off by setting
+`particlePerSecond = 0` on finger-up rather than by removing the emitter, so flecks already in the
+air finish falling.
+
+Particles are born around the rim of a 36.dp `Shape.OVAL` — the edge of the fingertip contact
+patch — flicked outward across the full 360° and pulled down hard (`gravityStrength = 900f`).
+The overlay sits *above* the foil and *outside* its rounded clip, so dust can spill onto the
+ticket instead of being cut off at the panel edge.
+
+**Dust only comes off foil that is still there.** Dragging back across an area you already
+scratched emits nothing, and holding a finger still stops emission rather than piling up flecks.
+
+`ScratchState` keeps a coarse boolean occupancy grid (10 px cells) alongside the stroke path —
+the cheap way to answer "is there still foil here?", since hit-testing the `Path` would mean
+building a `Region` every frame. Each movement reports how many cells it *newly* cleared,
+divided by how many that movement could have cleared had everything been virgin foil
+(a disc sweeping distance `d` clears at most a `2r x d` strip). Untouched foil scores ~1 at any
+drag speed; bare ticket scores 0.
+
+Measuring swept area rather than "how much foil is under the finger" matters: on a slow drag the
+fingertip mostly overlaps what it cleared microseconds ago, so the disc-coverage reading sits
+near 3% even on virgin foil — enough to gate off legitimate dust. The ratio is smoothed
+(`FreshnessSmoothing`) because a single move only spans a few grid cells, and the slight lag reads
+naturally, since dust doesn't stop dead the instant the finger crosses onto bare ticket.
 
 ### Perspective tilt
 
