@@ -22,7 +22,7 @@ import com.example.holoscratch.sensor.Tilt
  * across the direction of travel, [BladeThickness] how thin it is along it.
  */
 private val BladeLength: Dp = 26.dp
-private val BladeThickness: Dp = 8.dp
+private val BladeThickness: Dp = 4.dp
 
 /**
  * A rectangle filled with the [HOLO_FOIL_SHADER], scratchable if a [scratch] state is given.

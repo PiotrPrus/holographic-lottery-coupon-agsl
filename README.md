@@ -52,8 +52,19 @@ writes a zero-length segment that the round cap turns into a dot.
 
 People scratch a card with a coin edge or a fingernail, so the eraser is a **thin rectangle**,
 not a round brush. Its long axis is kept perpendicular to the direction of travel, so a drag
-sweeps a flat-sided band with square ends and a tap leaves a straight-edged scrape rather than a
-dot. `BladeLength` (26.dp, across the travel) and `BladeThickness` (8.dp, along it) size it.
+sweeps a band with square ends and a tap leaves a straight-edged scrape rather than a dot.
+`BladeLength` (26.dp, across the travel) and `BladeThickness` (4.dp, along it) size it.
+
+Nobody drags a coin at a perfectly constant width down a dead straight line, so the blade
+**wanders**: its width varies between 70% and 120% of nominal, and the band's centre line drifts
+sideways by up to 18% of its half-length. Both are resampled per *distance travelled*
+(`JitterResamplePx`) rather than per pointer event — events arrive every few px, and rerolling
+that often gives high-frequency serration instead of the coarse raggedness of a real scrape — and
+they chase their new target gradually (`JitterFollow`) so edges wander rather than jump.
+
+Each swept segment is therefore a **trapezoid**, running from the previous width/offset to the
+current ones. That keeps consecutive segments continuous: a shared edge means no gaps open up
+inside the scrape while its outline stays irregular.
 
 The stroke path is therefore **filled, not stroked** — a stroke is always a capsule of constant
 width with the caps it is given, which is exactly the rounded shape being avoided. Each movement
