@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,7 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Shadow
 import com.example.holoscratch.holo.HoloFoilPanel
+import com.example.holoscratch.holo.ScratchState
 import com.example.holoscratch.sensor.Tilt
 import com.example.holoscratch.sensor.rememberDeviceTilt
 
@@ -40,6 +45,7 @@ private val Ink = Color(0xFF1B1A2E)
 private val Paper = Color(0xFFF7F1E4)
 private val Accent = Color(0xFFE0493B)
 private val Muted = Color(0xFF7A7690)
+private val PrintArea = Color(0xFFEFE7D6)
 
 @Composable
 fun CouponScreen(modifier: Modifier = Modifier) {
@@ -58,9 +64,12 @@ fun CouponScreen(tilt: State<Tilt>, modifier: Modifier = Modifier) {
         .padding(20.dp),
     contentAlignment = Alignment.Center,
   ) {
+    val scratch = remember { ScratchState() }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       CouponCard(
         tilt = { tilt.value },
+        scratch = scratch,
         modifier =
           Modifier.graphicsLayer {
             // Perspective tilt: the card leans with the phone. Rolling right edge down
@@ -73,7 +82,17 @@ fun CouponScreen(tilt: State<Tilt>, modifier: Modifier = Modifier) {
           },
       )
       Spacer(Modifier.height(24.dp))
-      TiltReadout(tilt = tilt)
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        TiltReadout(tilt = tilt)
+        Spacer(Modifier.width(20.dp))
+        Text(
+          text = "reset",
+          color = Color.White.copy(alpha = 0.6f),
+          fontSize = 13.sp,
+          fontFamily = FontFamily.Monospace,
+          modifier = Modifier.clickable { scratch.reset() }.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
+      }
     }
   }
 }
@@ -92,7 +111,7 @@ private fun TiltReadout(tilt: State<Tilt>) {
 }
 
 @Composable
-private fun CouponCard(tilt: () -> Tilt, modifier: Modifier = Modifier) {
+private fun CouponCard(tilt: () -> Tilt, scratch: ScratchState, modifier: Modifier = Modifier) {
   Column(
     modifier =
       modifier
@@ -139,23 +158,34 @@ private fun CouponCard(tilt: () -> Tilt, modifier: Modifier = Modifier) {
 
     Spacer(Modifier.height(28.dp))
 
-    HoloFoilPanel(
-      tilt = tilt,
+    Box(
       modifier =
         Modifier
           .fillMaxWidth()
           .height(180.dp)
           .shadow(2.dp, RoundedCornerShape(14.dp))
-          .clip(RoundedCornerShape(14.dp)),
+          .clip(RoundedCornerShape(14.dp))
+          .background(PrintArea)
     ) {
+      // Underneath the foil: the prize, printed straight on the ticket.
       Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-          "SCRATCH HERE",
-          color = Color.Black.copy(alpha = 0.22f),
-          fontSize = 13.sp,
-          fontWeight = FontWeight.Bold,
-          letterSpacing = 4.sp,
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Text("YOU WON", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+          Text("$100", color = Color.Black, fontSize = 56.sp, fontWeight = FontWeight.Black)
+        }
+      }
+
+      // The aluminium layer on top. Scratching clears foil and sheen together.
+      HoloFoilPanel(tilt = tilt, scratch = scratch, modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+          Text(
+            "SCRATCH HERE",
+            color = Color.Black.copy(alpha = 0.22f),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 4.sp,
+          )
+        }
       }
     }
 

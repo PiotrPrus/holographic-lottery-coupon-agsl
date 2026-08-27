@@ -6,8 +6,10 @@ diffraction sheen. Tilt the phone and the sheen band, anisotropic highlight and 
 facets move as if light were reflecting off real foil. The card itself leans in 3D
 perspective with the device.
 
-Everything is driven by the gravity sensor — there is **no touch interaction**, and no
-scratching/reveal logic. The point is the material, not the game.
+The sheen is driven entirely by the gravity sensor; touch does one thing only — **scratch
+the foil off**. Drag a finger across the panel and the aluminium is removed along the
+stroke, taking its holographic sheen with it and revealing the prize printed underneath.
+Whatever foil is left keeps reacting to tilt.
 
 Inspired by [Msaneakhtar's write-up on building a holographic Pokémon card on Android](https://medium.com/),
 which does it with Canvas layers and blend modes; this takes the single-shader route instead.
@@ -18,7 +20,8 @@ which does it with Canvas layers and blend modes; this takes the single-shader r
 |---|---|
 | `sensor/DeviceTilt.kt` | `rememberDeviceTilt()` — `TYPE_GRAVITY` (accelerometer fallback), low-pass smoothed into `Tilt(roll, pitch)` in ~[-1, 1]. Registered only while RESUMED. |
 | `holo/HoloFoilShader.kt` | The AGSL source. Two uniforms: `uResolution`, `uTilt`. |
-| `holo/HoloFoilPanel.kt` | Compose box filled with the shader. Tilt is read inside `onDrawBehind`, so sensor updates redraw without recomposing. |
+| `holo/HoloFoilPanel.kt` | Compose box filled with the shader. Tilt is read inside `onDrawWithContent`, so sensor updates redraw without recomposing. Owns the scratch gesture. |
+| `holo/ScratchState.kt` | Accumulates finger strokes into a `Path`, with a `revision` counter as the draw-phase invalidation signal. |
 | `ui/CouponScreen.kt` | The coupon card + `graphicsLayer` perspective tilt + a roll/pitch readout. |
 
 ### Shader layers
@@ -31,6 +34,20 @@ Roughly mirroring the physical stack of a real foil card, but in a single pass:
 4. **Diffraction fringes** — two counter-moving spectral gradients whose phase is a function of position and viewing angle, shown only inside the sheen band so the rest stays gray metal. The palette is blended 55% toward mid-gray so hues read as metallic sheen rather than printed ink.
 5. **Glitter facets** — jittered micro-cells, each with a random facet angle; a cell flashes only when its angle aligns with the current tilt, so sparkle twinkles as you move.
 6. **Plastic glare** — soft white wash on top, separate from the foil colour.
+
+### Scratching
+
+The panel renders into an offscreen layer (`CompositingStrategy.Offscreen`), and the stroke
+path is then drawn over it with `BlendMode.Clear`. Compositing offscreen is what makes
+`Clear` punch actual holes instead of painting black — the same isolated-buffer rule that
+governs `saveLayer`.
+
+Because the shader is drawn *inside* that layer, an erased region loses the metal and its
+sheen in one operation; there is no separate "holo mask" to keep in sync. Coalesced pointer
+events are replayed (`change.historical`) so fast swipes don't leave gaps, and a plain tap
+writes a zero-length segment that the round cap turns into a dot.
+
+`ScratchWidth` (46.dp, ~a fingertip) controls how much comes off per stroke.
 
 ### Perspective tilt
 
