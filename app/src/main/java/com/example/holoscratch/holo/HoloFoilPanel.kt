@@ -11,17 +11,18 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.ShaderBrush
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.holoscratch.sensor.Tilt
 
-/** Roughly a fingertip. */
-private val ScratchWidth: Dp = 46.dp
+/**
+ * The scratching tool: a coin edge or a fingernail. [BladeLength] is how wide the scrape is
+ * across the direction of travel, [BladeThickness] how thin it is along it.
+ */
+private val BladeLength: Dp = 26.dp
+private val BladeThickness: Dp = 8.dp
 
 /**
  * A rectangle filled with the [HOLO_FOIL_SHADER], scratchable if a [scratch] state is given.
@@ -51,7 +52,7 @@ fun HoloFoilPanel(
             Modifier.pointerInput(scratch) {
               awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
-                scratch.setBounds(size.width, size.height, ScratchWidth.toPx())
+                scratch.setBounds(size.width, size.height, BladeLength.toPx(), BladeThickness.toPx())
                 scratch.start(down.position)
                 down.consume()
                 do {
@@ -74,9 +75,6 @@ fun HoloFoilPanel(
           val shader = RuntimeShader(HOLO_FOIL_SHADER)
           val brush = ShaderBrush(shader)
           shader.setFloatUniform("uResolution", size.width, size.height)
-          val stroke =
-            Stroke(width = ScratchWidth.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-
           onDrawWithContent {
             val t = tilt()
             shader.setFloatUniform("uTilt", t.roll, t.pitch)
@@ -85,12 +83,8 @@ fun HoloFoilPanel(
             if (scratch != null) {
               @Suppress("UNUSED_EXPRESSION")
               scratch.revision // draw-phase read: invalidates when the path grows
-              drawPath(
-                path = scratch.path,
-                color = Color.Transparent,
-                style = stroke,
-                blendMode = BlendMode.Clear,
-              )
+              // Filled, not stroked: the path already holds the rectangles the blade swept out.
+              drawPath(path = scratch.path, color = Color.Transparent, blendMode = BlendMode.Clear)
             }
           }
         }

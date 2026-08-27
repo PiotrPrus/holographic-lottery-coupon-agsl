@@ -48,7 +48,20 @@ sheen in one operation; there is no separate "holo mask" to keep in sync. Coales
 events are replayed (`change.historical`) so fast swipes don't leave gaps, and a plain tap
 writes a zero-length segment that the round cap turns into a dot.
 
-`ScratchWidth` (46.dp, ~a fingertip) controls how much comes off per stroke.
+### The scratching tool
+
+People scratch a card with a coin edge or a fingernail, so the eraser is a **thin rectangle**,
+not a round brush. Its long axis is kept perpendicular to the direction of travel, so a drag
+sweeps a flat-sided band with square ends and a tap leaves a straight-edged scrape rather than a
+dot. `BladeLength` (26.dp, across the travel) and `BladeThickness` (8.dp, along it) size it.
+
+The stroke path is therefore **filled, not stroked** — a stroke is always a capsule of constant
+width with the caps it is given, which is exactly the rounded shape being avoided. Each movement
+appends the parallelogram the blade swept plus the blade itself at the leading end.
+
+A press cannot know which way the blade faces yet, so its geometry is deferred until the first
+move reveals the direction; stamping it eagerly left a tab sticking out sideways at the start of
+every scrape. A press that never moves is a genuine tap, and lands the blade flat on finger-up.
 
 ### Scratch dust
 
@@ -62,8 +75,8 @@ frame makes the source follow the finger. Emission is switched off by setting
 `particlePerSecond = 0` on finger-up rather than by removing the emitter, so flecks already in the
 air finish falling.
 
-Particles are born around the rim of a 36.dp `Shape.OVAL` — the edge of the fingertip contact
-patch — flicked outward across the full 360° and pulled down hard (`gravityStrength = 900f`).
+Particles are born along the rim of a `Shape.RECT` matching the blade's contact patch — the
+region can't be rotated to follow the drag, but at this size that isn't visible — flicked outward across the full 360° and pulled down hard (`gravityStrength = 900f`).
 The overlay sits *above* the foil and *outside* its rounded clip, so dust can spill onto the
 ticket instead of being cut off at the panel edge.
 
@@ -74,11 +87,11 @@ scratched emits nothing, and holding a finger still stops emission rather than p
 the cheap way to answer "is there still foil here?", since hit-testing the `Path` would mean
 building a `Region` every frame. Each movement reports how many cells it *newly* cleared,
 divided by how many that movement could have cleared had everything been virgin foil
-(a disc sweeping distance `d` clears at most a `2r x d` strip). Untouched foil scores ~1 at any
+(a blade of length `L` sweeping distance `d` clears at most an `L x d` band). Untouched foil scores ~1 at any
 drag speed; bare ticket scores 0.
 
-Measuring swept area rather than "how much foil is under the finger" matters: on a slow drag the
-fingertip mostly overlaps what it cleared microseconds ago, so the disc-coverage reading sits
+Measuring swept area rather than "how much foil is under the blade" matters: on a slow drag the
+blade mostly overlaps what it cleared microseconds ago, so the coverage reading sits
 near 3% even on virgin foil — enough to gate off legitimate dust. The ratio is smoothed
 (`FreshnessSmoothing`) because a single move only spans a few grid cells, and the slight lag reads
 naturally, since dust doesn't stop dead the instant the finger crosses onto bare ticket.
