@@ -67,6 +67,22 @@ patch — flicked outward across the full 360° and pulled down hard (`gravitySt
 The overlay sits *above* the foil and *outside* its rounded clip, so dust can spill onto the
 ticket instead of being cut off at the panel edge.
 
+**Dust only comes off foil that is still there.** Dragging back across an area you already
+scratched emits nothing, and holding a finger still stops emission rather than piling up flecks.
+
+`ScratchState` keeps a coarse boolean occupancy grid (10 px cells) alongside the stroke path —
+the cheap way to answer "is there still foil here?", since hit-testing the `Path` would mean
+building a `Region` every frame. Each movement reports how many cells it *newly* cleared,
+divided by how many that movement could have cleared had everything been virgin foil
+(a disc sweeping distance `d` clears at most a `2r x d` strip). Untouched foil scores ~1 at any
+drag speed; bare ticket scores 0.
+
+Measuring swept area rather than "how much foil is under the finger" matters: on a slow drag the
+fingertip mostly overlaps what it cleared microseconds ago, so the disc-coverage reading sits
+near 3% even on virgin foil — enough to gate off legitimate dust. The ratio is smoothed
+(`FreshnessSmoothing`) because a single move only spans a few grid cells, and the slight lag reads
+naturally, since dust doesn't stop dead the instant the finger crosses onto bare ticket.
+
 ### Perspective tilt
 
 `graphicsLayer { rotationY = roll * 12f; rotationX = -pitch * 12f; cameraDistance = 14f * density }`.

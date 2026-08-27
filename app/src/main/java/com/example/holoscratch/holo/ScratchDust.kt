@@ -2,12 +2,12 @@ package com.example.holoscratch.holo
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import dev.piotrprus.particleemitter.CanvasEmitterConfig
 import dev.piotrprus.particleemitter.CanvasParticleEmitter
 import dev.piotrprus.particleemitter.ParticleShape
@@ -22,6 +22,9 @@ private val DustColors =
     Color(0xFFBFC3C8),
   )
 
+/** Emission rate at which the fingertip is removing untouched foil. */
+private const val MaxParticlesPerSecond = 260
+
 /**
  * Aluminium dust thrown off under the fingertip while scratching.
  *
@@ -29,27 +32,34 @@ private val DustColors =
  * being cut off at the panel edge. Only this composable reads [ScratchState.emitPoint], so the
  * per-frame position updates recompose the emitter config and nothing else.
  *
- * The emitter runs continuously; emission is switched by dropping [CanvasEmitterConfig.particlePerSecond]
- * to zero when the finger lifts, which lets already-airborne flecks finish falling.
+ * The emitter runs continuously; the rate is scaled by [DustSource.freshness] — how much foil the
+ * finger is actually removing right now — so dragging back over an already-bare area emits nothing,
+ * and crossing the ragged boundary of a scratch tapers off naturally. Dropping the rate to zero
+ * (rather than removing the emitter) lets already-airborne flecks finish falling.
  */
 @Composable
 fun ScratchDust(scratch: ScratchState, modifier: Modifier = Modifier) {
   val density = LocalDensity.current
-  val point = scratch.emitPoint
-  val scratching = point != Offset.Unspecified
+  val source = scratch.dust
 
   val center =
-    if (scratching) {
-      with(density) { DpOffset(point.x.toDp(), point.y.toDp()) }
-    } else {
+    if (source == null) {
       DpOffset.Zero
+    } else {
+      with(density) { DpOffset(source.position.x.toDp(), source.position.y.toDp()) }
     }
+
+  // Below this the finger is essentially riding on bare ticket; emitting stray flecks there is
+  // what made the dust look like it came from the finger rather than from the foil.
+  val rate =
+    if (source == null || source.freshness < 0.05f) 0
+    else (MaxParticlesPerSecond * source.freshness).roundToInt()
 
   CanvasParticleEmitter(
     modifier = modifier,
     config =
       CanvasEmitterConfig(
-        particlePerSecond = if (scratching) 220 else 0,
+        particlePerSecond = rate,
         emitterCenter = center,
         // Born around the rim of the fingertip contact patch rather than a single point,
         // so the dust looks pushed out by the edge of the finger.
