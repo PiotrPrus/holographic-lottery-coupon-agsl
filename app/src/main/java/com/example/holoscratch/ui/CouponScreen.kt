@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.Shadow
 import com.example.holoscratch.holo.HoloFoilPanel
+import com.example.holoscratch.holo.ScratchDust
 import com.example.holoscratch.holo.ScratchState
 import com.example.holoscratch.sensor.Tilt
 import com.example.holoscratch.sensor.rememberDeviceTilt
@@ -158,35 +159,40 @@ private fun CouponCard(tilt: () -> Tilt, scratch: ScratchState, modifier: Modifi
 
     Spacer(Modifier.height(28.dp))
 
-    Box(
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .height(180.dp)
-          .shadow(2.dp, RoundedCornerShape(14.dp))
-          .clip(RoundedCornerShape(14.dp))
-          .background(PrintArea)
-    ) {
-      // Underneath the foil: the prize, printed straight on the ticket.
-      Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("YOU WON", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
-          Text("$100", color = Color.Black, fontSize = 56.sp, fontWeight = FontWeight.Black)
+    // Outer box is deliberately unclipped so scratch dust can spill past the panel edge.
+    Box(modifier = Modifier.fillMaxWidth().height(180.dp)) {
+      Box(
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .shadow(2.dp, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(PrintArea)
+      ) {
+        // Underneath the foil: the prize, printed straight on the ticket.
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("YOU WON", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+            Text("$100", color = Color.Black, fontSize = 56.sp, fontWeight = FontWeight.Black)
+          }
+        }
+
+        // The aluminium layer on top. Scratching clears foil and sheen together.
+        HoloFoilPanel(tilt = tilt, scratch = scratch, modifier = Modifier.fillMaxSize()) {
+          Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+              "SCRATCH HERE",
+              color = Color.Black.copy(alpha = 0.22f),
+              fontSize = 13.sp,
+              fontWeight = FontWeight.Bold,
+              letterSpacing = 4.sp,
+            )
+          }
         }
       }
 
-      // The aluminium layer on top. Scratching clears foil and sheen together.
-      HoloFoilPanel(tilt = tilt, scratch = scratch, modifier = Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-          Text(
-            "SCRATCH HERE",
-            color = Color.Black.copy(alpha = 0.22f),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 4.sp,
-          )
-        }
-      }
+      // Dust rides above the foil and outside its clip.
+      ScratchDust(scratch = scratch, modifier = Modifier.matchParentSize())
     }
 
     Spacer(Modifier.height(28.dp))

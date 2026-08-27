@@ -21,7 +21,8 @@ which does it with Canvas layers and blend modes; this takes the single-shader r
 | `sensor/DeviceTilt.kt` | `rememberDeviceTilt()` — `TYPE_GRAVITY` (accelerometer fallback), low-pass smoothed into `Tilt(roll, pitch)` in ~[-1, 1]. Registered only while RESUMED. |
 | `holo/HoloFoilShader.kt` | The AGSL source. Two uniforms: `uResolution`, `uTilt`. |
 | `holo/HoloFoilPanel.kt` | Compose box filled with the shader. Tilt is read inside `onDrawWithContent`, so sensor updates redraw without recomposing. Owns the scratch gesture. |
-| `holo/ScratchState.kt` | Accumulates finger strokes into a `Path`, with a `revision` counter as the draw-phase invalidation signal. |
+| `holo/ScratchState.kt` | Accumulates finger strokes into a `Path`, with a `revision` counter as the draw-phase invalidation signal. Also publishes the live fingertip position for the dust. |
+| `holo/ScratchDust.kt` | Aluminium flecks thrown off under the finger, via [ParticleEmitter](https://github.com/PiotrPrus/ParticleEmitter). |
 | `ui/CouponScreen.kt` | The coupon card + `graphicsLayer` perspective tilt + a roll/pitch readout. |
 
 ### Shader layers
@@ -48,6 +49,23 @@ events are replayed (`change.historical`) so fast swipes don't leave gaps, and a
 writes a zero-length segment that the round cap turns into a dot.
 
 `ScratchWidth` (46.dp, ~a fingertip) controls how much comes off per stroke.
+
+### Scratch dust
+
+Real foil sheds grit as it comes off, so scratching emits particles under the fingertip using
+[ParticleEmitter](https://github.com/PiotrPrus/ParticleEmitter)'s `CanvasParticleEmitter`.
+
+`ScratchState` publishes the live fingertip position; `ScratchDust` is the only composable that
+reads it, so the per-frame position updates recompose the emitter config and nothing else. The
+emitter captures its config with `rememberUpdatedState`, which means moving `emitterCenter` every
+frame makes the source follow the finger. Emission is switched off by setting
+`particlePerSecond = 0` on finger-up rather than by removing the emitter, so flecks already in the
+air finish falling.
+
+Particles are born around the rim of a 36.dp `Shape.OVAL` — the edge of the fingertip contact
+patch — flicked outward across the full 360° and pulled down hard (`gravityStrength = 900f`).
+The overlay sits *above* the foil and *outside* its rounded clip, so dust can spill onto the
+ticket instead of being cut off at the panel edge.
 
 ### Perspective tilt
 

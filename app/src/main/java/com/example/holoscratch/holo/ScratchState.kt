@@ -3,6 +3,7 @@ package com.example.holoscratch.holo
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
@@ -25,11 +26,22 @@ class ScratchState {
 
   private var last = Offset.Unspecified
 
+  /**
+   * Where the finger is right now, or [Offset.Unspecified] when nothing is being scratched.
+   * Read by the dust emitter so particles spawn under the fingertip.
+   */
+  var emitPoint by mutableStateOf(Offset.Unspecified)
+    private set
+
+  val isScratching: Boolean
+    get() = emitPoint != Offset.Unspecified
+
   fun start(position: Offset) {
     path.moveTo(position.x, position.y)
     // Zero-length segment so a plain tap still leaves a round dot.
     path.lineTo(position.x, position.y)
     last = position
+    emitPoint = position
     revision++
   }
 
@@ -42,16 +54,19 @@ class ScratchState {
     if ((position - last).getDistanceSquared() < 4f) return
     path.lineTo(position.x, position.y)
     last = position
+    emitPoint = position
     revision++
   }
 
   fun endStroke() {
     last = Offset.Unspecified
+    emitPoint = Offset.Unspecified
   }
 
   fun reset() {
     path.reset()
     last = Offset.Unspecified
+    emitPoint = Offset.Unspecified
     revision = 0
   }
 }
