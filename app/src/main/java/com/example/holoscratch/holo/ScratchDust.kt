@@ -61,10 +61,11 @@ fun ScratchDust(scratch: ScratchState, modifier: Modifier = Modifier) {
       CanvasEmitterConfig(
         particlePerSecond = rate,
         emitterCenter = center,
-        // Born around the rim of the fingertip contact patch rather than a single point,
-        // so the dust looks pushed out by the edge of the finger.
-        startRegionShape = CanvasEmitterConfig.Shape.OVAL,
-        startRegionSize = DpSize(36.dp, 36.dp),
+        // Born along the rim of the blade's contact patch rather than a single point, so dust
+        // looks pushed out by the edge of the coin. The region cannot be rotated to follow the
+        // drag direction, so it stays axis-aligned — invisible at this size.
+        startRegionShape = CanvasEmitterConfig.Shape.RECT,
+        startRegionSize = DpSize(26.dp, 10.dp),
         particleShapes = listOf(ParticleShape.Circle),
         lifespanRange = 380..900,
         fadeOutTime = 250..600,
