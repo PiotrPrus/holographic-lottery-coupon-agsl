@@ -37,6 +37,18 @@ private const val JitterResamplePx = 9f
 private const val JitterFollow = 0.35f
 
 /**
+ * How far the finger must travel from the press before the blade is placed. A 2 px move snaps to
+ * 0°/45°/90° on the touch grid, so the first direction is measured over a longer baseline.
+ */
+private const val MinDirectionPx = 8f
+
+/**
+ * How quickly the blade turns toward a new direction of travel. Per-event directions are noisy
+ * over a few px; easing them keeps the edge from flickering while still following a curve.
+ */
+private const val DirectionFollow = 0.5f
+
+/**
  * Where dust should currently be thrown from.
  *
  * [freshness] is how much foil the blade is actually removing right now, 0..1: the area newly
@@ -74,11 +86,15 @@ class ScratchState {
   private var last = Offset.Unspecified
 
   /**
-   * A press cannot know which way the blade is facing yet, so geometry is deferred until the
-   * first move reveals the direction. Stamping it eagerly left a tab sticking out sideways at
-   * the start of every scrape.
+   * A press cannot know which way the blade is facing yet, so nothing is drawn until the finger
+   * has moved [MinDirectionPx] and the direction is known. Stamping it eagerly left a tab sticking
+   * out sideways at the start of every scrape. A tap that never moves leaves no mark at all.
    */
   private var pendingPress = false
+
+  /** Smoothed direction of travel (unit vector), valid once [pendingPress] is false. */
+  private var dirX = 0f
+  private var dirY = 1f
 
   /**
    * The scratching tool is a thin rectangle — a coin edge or a fingernail — not a round brush.
@@ -137,16 +153,27 @@ class ScratchState {
     }
     val moved = sqrt((position - last).getDistanceSquared())
 
+    if (pendingPress) {
+      // Keep the press point as the anchor until the direction is known; then the blade lands
+      // there already turned perpendicular to the move.
+      if (moved < MinDirectionPx) {
+        freshness += (0f - freshness) * FreshnessSmoothing
+        dust = DustSource(position, freshness)
+        return
+      }
+      dirX = (position.x - last.x) / moved
+      dirY = (position.y - last.y) / moved
+      stampPress()
+    }
+
     // Skip sub-pixel jitter in the path; the blade is wide enough to cover the gaps. Dust is
     // still re-evaluated, so holding still stops emission instead of running forever.
     val instant =
       if (moved < 2f) {
         0f
       } else {
-        val dirX = (position.x - last.x) / moved
-        val dirY = (position.y - last.y) / moved
+        followDirection((position.x - last.x) / moved, (position.y - last.y) / moved)
         advanceJitter(moved)
-        if (pendingPress) stampPress(dirX, dirY)
 
         // Clear along the band's actual (offset) centre line, at its actual width.
         val nx = -dirY
@@ -168,8 +195,7 @@ class ScratchState {
   }
 
   fun endStroke() {
-    // A press that never moved is a genuine tap: land the blade flat.
-    if (pendingPress && last != Offset.Unspecified) stampPress(dirX = 0f, dirY = 1f)
+    // A press that never moved far enough is a tap: no direction, so no scratch.
     pendingPress = false
     last = Offset.Unspecified
     freshness = 0f
@@ -215,8 +241,23 @@ class ScratchState {
 
   // ── geometry ────────────────────────────────────────────────────────────────────────────
 
-  /** Stamps the deferred press blade once [dirX]/[dirY] is known. */
-  private fun stampPress(dirX: Float, dirY: Float) {
+  /** Eases the blade's direction toward the latest move and renormalises it. */
+  private fun followDirection(rawX: Float, rawY: Float) {
+    val x = dirX + (rawX - dirX) * DirectionFollow
+    val y = dirY + (rawY - dirY) * DirectionFollow
+    val len = sqrt(x * x + y * y)
+    if (len < 1e-3f) {
+      // A sharp reversal cancels out: take the new direction as is.
+      dirX = rawX
+      dirY = rawY
+    } else {
+      dirX = x / len
+      dirY = y / len
+    }
+  }
+
+  /** Stamps the deferred press blade once the direction is known. */
+  private fun stampPress() {
     pendingPress = false
     addBlade(last, dirX, dirY)
     clearAlong(last, last, halfLength)
