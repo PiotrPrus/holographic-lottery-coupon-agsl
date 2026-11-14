@@ -24,6 +24,9 @@ internal fun vibrate(ms: Int): Unit = js("window.holoVibrate(ms)")
 internal fun canVibrate(): Boolean = js("typeof navigator.vibrate === 'function'")
 
 internal fun locationHash(): String = js("window.location.hash")
+
+/** True only when served from this computer, never on GitHub Pages. */
+internal fun isLocalhost(): Boolean = js("['localhost', '127.0.0.1'].includes(window.location.hostname)")
 internal fun setLocationHash(hash: String): Unit = js("window.location.hash = hash")
 
 internal fun nowMs(): Double = js("performance.now()")

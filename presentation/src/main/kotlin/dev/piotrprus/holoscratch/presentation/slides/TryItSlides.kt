@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import dev.piotrprus.holoscratch.presentation.deck.Slide
 import dev.piotrprus.holoscratch.presentation.ui.DeckColors
 import dev.piotrprus.holoscratch.presentation.ui.PhotoImage
+import dev.piotrprus.holoscratch.presentation.demos.TiltArea
+import dev.piotrprus.holoscratch.presentation.demos.rememberMouseTilt
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 
 // "Try it on your phone": one QR code per web demo (the `web/` module on GitHub Pages), shown
@@ -53,6 +55,32 @@ fun tryItSlide(page: String, route: String, note: String? = null) = Slide {
                 )
                 if (note != null) Caption(note)
             }
+        }
+    }
+}
+
+/**
+ * After "Thank you": the giveaway card (`#/w4b8gx`), 1 in 7 wins one of the goodie bags.
+ * The title is printed in holo foil; the emoji sits next to it in plain colour.
+ */
+val prizesSlide = Slide {
+    val tilt = rememberMouseTilt()
+    TiltArea(tilt, Modifier.fillMaxSize().background(StageBackground)) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 110.dp, vertical = 80.dp),
+            horizontalArrangement = Arrangement.spacedBy(100.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                HoloText("We have", tilt, fontSize = 130.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HoloText("prizes!!", tilt, fontSize = 130.sp)
+                    Text("🎉", fontSize = 110.sp, modifier = Modifier.padding(start = 28.dp))
+                }
+                Gap(36.dp)
+                Text("Scratch the card on your phone.\nWin a goodie bag.", color = DeckColors.textPrimary, fontSize = 48.sp, lineHeight = 64.sp)
+            }
+            QrCode("${WEB_DEMOS_URL}#/w4b8gx", size = 600.dp)
         }
     }
 }

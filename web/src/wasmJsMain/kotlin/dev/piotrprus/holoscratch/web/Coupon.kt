@@ -46,6 +46,8 @@ fun Modifier.perspectiveTilt(): Modifier = graphicsLayer {
 @Composable
 fun Coupon(
     modifier: Modifier = Modifier,
+    subtitle: String = "Your chance to win $100 is right here.",
+    prize: @Composable BoxScope.() -> Unit = { Prize() },
     overlay: @Composable BoxScope.() -> Unit = {},
     scratchArea: @Composable BoxScope.() -> Unit,
 ) {
@@ -65,7 +67,7 @@ fun Coupon(
         Gap(20)
         Label("SCRATCH & WIN", color = Ink, size = 30.sp, weight = FontWeight.Black, align = TextAlign.Center)
         Gap(6)
-        Label("Your chance to win $100 is right here.", color = Muted, size = 14.sp, align = TextAlign.Center)
+        Label(subtitle, color = Muted, size = 14.sp, align = TextAlign.Center)
         Gap(20)
         // Outer box unclipped so dust can spill past the panel edge.
         Box(Modifier.fillMaxWidth().height(180.dp)) {
@@ -76,7 +78,7 @@ fun Coupon(
                     .clip(RoundedCornerShape(14.dp))
                     .background(PrintArea),
             ) {
-                Prize()
+                prize()
                 scratchArea()
             }
             overlay()

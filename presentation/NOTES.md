@@ -131,3 +131,4 @@ Every scratch before this chapter uses a round brush. The blade appears here fir
 - **Finale.** Everything together, with sound. Next slide: the QR code to the same card on their phones.
 - **Recap.** One line per click: what it does → what made it happen.
 - **Thank you.** The QR code links to the repo.
+- **We have prizes!! 🎉** QR to the giveaway card (`#/w4b8gx`): 1 in 7 cards wins a goodie bag, "New card" draws again. 5 bags. Ask winners to show the "YOU WON" card.
