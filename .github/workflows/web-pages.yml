@@ -1,0 +1,54 @@
+# Builds the Kotlin/Wasm web demos (:web) and publishes them to GitHub Pages:
+#   https://piotrprus.github.io/holographic-lottery-coupon-agsl/
+#
+# One-time repo setting: Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: Web demos
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; let a running one finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # JDK 21 also satisfies the :presentation toolchain, so nothing extra is provisioned
+      # while Gradle configures the other modules.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build release bundle
+        run: ./gradlew :web:wasmJsBrowserDistribution --no-configuration-cache
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/build/dist/wasmJs/productionExecutable
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
