@@ -41,6 +41,9 @@ enum class Route(val hash: String) {
     Foil("t9c4wd"),
     Coin("h2n6zb"),
     Final("q5r1fy"),
+
+    /** The giveaway card: 1 in 7 wins a goodie bag. Shown only at the end of the talk. */
+    Giveaway("w4b8gx"),
     ;
 
     companion object {
@@ -78,6 +81,7 @@ fun App() {
             Route.Foil -> FoilPage()
             Route.Coin -> CoinScratchPage()
             Route.Final -> FinalPage()
+            Route.Giveaway -> GiveawayPage()
         }
     }
 }

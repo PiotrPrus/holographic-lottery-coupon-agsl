@@ -17,6 +17,7 @@ Base URL: <https://piotrprus.github.io/holographic-lottery-coupon-agsl/>
 | 3 | Foil (holo shader driven by tilt) | `…/#/t9c4wd` |
 | 4 | Coin scratch (holo foil + coin blade) | `…/#/h2n6zb` |
 | 5 | Final (coin + foil + dust + sound + vibration) | `…/#/q5r1fy` |
+| — | Giveaway: final card with a prize draw, 1 in 7 wins a goodie bag; "New card" draws again | `…/#/w4b8gx` |
 
 The keys are opaque on purpose and pages have no links to each other: the audience gets each demo only from its QR code in the talk. The bare site shows a landing page with no list. Any unknown hash shows the landing page.
 
@@ -70,3 +71,6 @@ The workflow `.github/workflows/web-pages.yml` builds and deploys on every push 
   the Final page, and only where fresh foil comes off.
 
 The release bundle has no source map (`devtool` is off for production in `build.gradle.kts`).
+
+
+**Giveaway checks (localhost only):** add `?win` or `?lose` to force the result, or `?stats` to show 10 000 test draws. On GitHub Pages these do nothing.
