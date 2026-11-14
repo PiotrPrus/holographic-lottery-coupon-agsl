@@ -139,3 +139,32 @@ Best on a real device. On an emulator you can fake tilt with:
 ```
 adb emu sensor set acceleration 4:6:6.5
 ```
+
+## Talk slides
+
+`presentation/` holds the slide deck for **Scratch to Reveal: Building a Holographic Card with
+AGSL, Sensors and Particles** (DevFest Wrocław 2026). It is a Compose Desktop app. Every foil,
+card and dust cloud on the slides is live code, and the AGSL shader above runs unchanged through
+Skia's `RuntimeEffect`. The mouse stands in for the gravity sensor, and dragging scratches the foil.
+
+```
+./gradlew :presentation:run
+```
+
+Use the arrow keys or space to move through the slides. `./gradlew :presentation:renderSlides`
+renders every slide step to PNG in `presentation/build/slides` (`-Psection=<name>` renders one section).
+Speaker notes, timing and the list of device recordings to add are in
+[`presentation/NOTES.md`](presentation/NOTES.md).
+
+## Web demos
+
+`web/` is a Compose Multiplatform (Kotlin/Wasm) port of the card for the talk audience, deployed
+to GitHub Pages by `.github/workflows/web-pages.yml` on every push to `main`:
+<https://piotrprus.github.io/holographic-lottery-coupon-agsl/>. Each demo opens only from its QR
+code in the deck. See [`web/README.md`](web/README.md).
+
+## Android app
+
+The app opens on a small menu: **Scratch the card** (the full coupon with foil, dust and sound)
+and **Gravity sensor** (live `TYPE_GRAVITY` values, roll and pitch, and a phone drawing with the
+gravity arrow), used for the device recordings in the talk.
