@@ -87,32 +87,22 @@ fun PillButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier,
  */
 @Composable
 fun Page(
-    number: Int,
     title: String,
-    onBack: () -> Unit,
     scrollable: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    // No link to other demos and no "n of 5": each QR code opens one demo, and the audience
+    // should not peek at the next ones before the talk gets there.
     Box(Modifier.fillMaxSize().background(Background), contentAlignment = Alignment.TopCenter) {
         Column(
             Modifier
                 .widthIn(max = 520.dp)
                 .fillMaxWidth()
                 .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Label(
-                    "< All demos",
-                    color = Dim,
-                    size = 14.sp,
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onBack)
-                        .padding(vertical = 8.dp, horizontal = 4.dp),
-                )
-            }
-            Spacer(Modifier.height(4.dp))
-            Label("$number. $title", size = 22.sp, weight = FontWeight.Black, modifier = Modifier.fillMaxWidth())
+            Label(title, size = 22.sp, weight = FontWeight.Black, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(16.dp))
             content()
         }

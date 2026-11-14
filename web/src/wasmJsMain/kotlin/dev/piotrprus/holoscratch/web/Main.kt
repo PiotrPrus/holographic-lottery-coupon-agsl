@@ -29,23 +29,24 @@ import androidx.compose.ui.window.ComposeViewport
 import kotlinx.coroutines.delay
 
 /**
- * One page per demo, each with its own URL so a QR code can point straight at it.
- * Hash routes (`#/coin`) because GitHub Pages serves static files only: a real subpath would
- * 404 on reload, a hash never reaches the server.
+ * One page per demo, each opened only by its own QR code in the talk.
+ * Hash routes (`#/k7p2qx`) because GitHub Pages serves static files only: a real subpath would
+ * 404 on reload, a hash never reaches the server. The keys are opaque on purpose, so nobody can
+ * guess `#/final` and jump ahead; any unknown hash shows the landing page.
  */
-enum class Route(val hash: String, val title: String, val blurb: String) {
-    Index("", "Scratch to Reveal", ""),
-    Scratch("scratch", "Simple scratch", "Grey paint, round thumb-sized pen, BlendMode.Clear."),
-    Sensor("sensor", "Gravity sensor check", "Live x, y, z from your phone, roll and pitch, and an arrow that points down."),
-    Foil("foil", "Foil", "The holographic foil shader, driven by your phone's tilt."),
-    Coin("coin", "Coin scratch", "Holo foil scratched with a coin edge instead of a round pen."),
-    Final("final", "Final", "Coin scratch + holo foil + sound + vibration."),
+enum class Route(val hash: String) {
+    Landing(""),
+    Scratch("k7p2qx"),
+    Sensor("m3v8ra"),
+    Foil("t9c4wd"),
+    Coin("h2n6zb"),
+    Final("q5r1fy"),
     ;
 
     companion object {
         fun fromHash(hash: String): Route {
             val key = hash.removePrefix("#").removePrefix("/").substringBefore('?').trimEnd('/')
-            return entries.firstOrNull { it != Index && it.hash == key } ?: Index
+            return entries.firstOrNull { it != Landing && it.hash == key } ?: Landing
         }
     }
 }
@@ -59,7 +60,7 @@ fun main() {
 @Composable
 fun App() {
     var route by remember { mutableStateOf(Route.fromHash(locationHash())) }
-    // Browser back/forward and hand-edited URLs change the hash behind our back.
+    // A new QR scan in the same tab, or browser back/forward, changes only the hash.
     LaunchedEffect(Unit) {
         while (true) {
             delay(150)
@@ -67,57 +68,34 @@ fun App() {
             if (now != route) route = now
         }
     }
-    val go: (Route) -> Unit = { r ->
-        setLocationHash(if (r == Route.Index) "#/" else "#/${r.hash}")
-        route = r
-    }
-    val back = { go(Route.Index) }
 
     MotionLoop()
     Box(Modifier.fillMaxSize().pointerTiltFallback()) {
         when (route) {
-            Route.Index -> IndexPage(go)
-            Route.Scratch -> SimpleScratchPage(back)
-            Route.Sensor -> SensorPage(back)
-            Route.Foil -> FoilPage(back)
-            Route.Coin -> CoinScratchPage(back)
-            Route.Final -> FinalPage(back)
+            Route.Landing -> LandingPage()
+            Route.Scratch -> SimpleScratchPage()
+            Route.Sensor -> SensorPage()
+            Route.Foil -> FoilPage()
+            Route.Coin -> CoinScratchPage()
+            Route.Final -> FinalPage()
         }
     }
 }
 
+/** What the bare site shows: no list of demos, just a pointer back to the talk. */
 @Composable
-private fun IndexPage(go: (Route) -> Unit) {
-    Box(Modifier.fillMaxSize().background(Background), contentAlignment = Alignment.TopCenter) {
+private fun LandingPage() {
+    Box(Modifier.fillMaxSize().background(Background), contentAlignment = Alignment.Center) {
         Column(
-            Modifier
-                .widthIn(max = 520.dp)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+            Modifier.widthIn(max = 520.dp).fillMaxWidth().padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Label("Scratch to Reveal", size = 28.sp, weight = FontWeight.Black)
-            Gap(6)
-            Label("A holographic scratch card, built step by step. Open the demos on your phone.", color = Dim, size = 14.sp)
-            Gap(20)
-            Route.entries.filter { it != Route.Index }.forEachIndexed { i, r ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.07f))
-                        .clickable { go(r) }
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                ) {
-                    Label("${i + 1}. ${r.title}", size = 18.sp, weight = FontWeight.Bold)
-                    Gap(3)
-                    Label(r.blurb, color = Dim, size = 13.sp)
-                }
-            }
+            Gap(10)
+            Label("Scan the QR code on the slide to open the next demo.", color = Dim, size = 15.sp)
             Gap(16)
             Label(
-                "Needs a recent browser (Chrome, Firefox, Safari on iOS 18.2+). On iPhone, tap \"Enable motion\" when asked.",
+                "Needs a recent browser (Chrome, Firefox, Safari on iOS 18.2+).",
                 color = Color.White.copy(alpha = 0.45f), size = 11.sp,
             )
         }

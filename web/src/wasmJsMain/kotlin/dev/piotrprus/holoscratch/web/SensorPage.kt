@@ -24,8 +24,8 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 @Composable
-fun SensorPage(onBack: () -> Unit) {
-    Page(2, "Gravity sensor check", onBack, scrollable = true) {
+fun SensorPage() {
+    Page("Gravity sensor check", scrollable = true) {
         MotionStatus()
         Gap(8)
         val live = Motion.source == TiltSource.Sensor && motionEvents() > 0

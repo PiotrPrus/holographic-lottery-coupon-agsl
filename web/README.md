@@ -11,12 +11,14 @@ Base URL: <https://piotrprus.github.io/holographic-lottery-coupon-agsl/>
 
 | # | Page | URL |
 |---|------|-----|
-|   | Index | `…/holographic-lottery-coupon-agsl/` |
-| 1 | Simple scratch (grey paint, round pen, `BlendMode.Clear`) | `…/#/scratch` |
-| 2 | Gravity sensor check (x, y, z, roll, pitch, arrow down) | `…/#/sensor` |
-| 3 | Foil (holo shader driven by tilt) | `…/#/foil` |
-| 4 | Coin scratch (holo foil + coin blade) | `…/#/coin` |
-| 5 | Final (coin + foil + dust + sound + vibration) | `…/#/final` |
+|   | Landing (no list) | `…/holographic-lottery-coupon-agsl/` |
+| 1 | Simple scratch (grey paint, round pen, `BlendMode.Clear`) | `…/#/k7p2qx` |
+| 2 | Gravity sensor check (x, y, z, roll, pitch, arrow down) | `…/#/m3v8ra` |
+| 3 | Foil (holo shader driven by tilt) | `…/#/t9c4wd` |
+| 4 | Coin scratch (holo foil + coin blade) | `…/#/h2n6zb` |
+| 5 | Final (coin + foil + dust + sound + vibration) | `…/#/q5r1fy` |
+
+The keys are opaque on purpose and pages have no links to each other: the audience gets each demo only from its QR code in the talk. The bare site shows a landing page with no list. Any unknown hash shows the landing page.
 
 Hash routes, so every page can have its own QR code and GitHub Pages never 404s on reload.
 
