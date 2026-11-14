@@ -52,4 +52,5 @@ plugins {
 
 rootProject.name = "Holo Scratch"
 include(":app")
+include(":presentation")
 include(":web")

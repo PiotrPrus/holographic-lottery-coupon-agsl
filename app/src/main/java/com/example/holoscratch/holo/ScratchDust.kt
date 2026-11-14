@@ -55,6 +55,9 @@ fun ScratchDust(scratch: ScratchState, modifier: Modifier = Modifier) {
     if (source == null || source.freshness < 0.05f) 0
     else (MaxParticlesPerSecond * source.freshness).roundToInt()
 
+  // The sound follows the dust: it plays only while particles are coming out.
+  ScratchSound(level = if (rate == 0 || source == null) 0f else source.freshness, position = source?.position)
+
   CanvasParticleEmitter(
     modifier = modifier,
     config =
