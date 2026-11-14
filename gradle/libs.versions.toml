@@ -6,6 +6,10 @@ androidxActivity = "1.13.0"
 androidxComposeBom = "2026.03.01"
 kotlin = "2.3.20"
 particleEmitter = "1.1.0"
+composeMultiplatform = "1.11.0"
+composeMultiplatformMaterial3 = "1.11.0-alpha07"
+composeMediaPlayer = "0.11.4"
+qrose = "1.0.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -21,6 +25,19 @@ androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtim
 
 particle-emitter = { module = "io.github.piotrprus:particle-emitter", version.ref = "particleEmitter" }
 
+# Presentation (Compose Desktop)
+compose-mp-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMultiplatformMaterial3" }
+composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composeMediaPlayer" }
+qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
+
+# Web demos (Compose Multiplatform, wasmJs)
+compose-mp-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+compose-mp-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compose-mp-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
