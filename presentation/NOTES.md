@@ -132,3 +132,4 @@ Every scratch before this chapter uses a round brush. The blade appears here fir
 - **Recap.** One line per click: what it does → what made it happen.
 - **Thank you.** The QR code links to the repo.
 - **We have prizes!! 🎉** QR to the giveaway card (`#/w4b8gx`): 1 in 7 cards wins a goodie bag, "New card" draws again. 5 bags. Ask winners to show the "YOU WON" card.
+- **One more thing: Lumeo.** My app, a voice-first second brain: speak your thoughts, AI turns them into notes, connects them and finds new ideas. QR to lumeo-secondbrain.com.

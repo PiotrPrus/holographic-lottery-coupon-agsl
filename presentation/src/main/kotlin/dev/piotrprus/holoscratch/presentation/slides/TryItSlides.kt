@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -81,6 +82,36 @@ val prizesSlide = Slide {
                 Text("Scratch the card on your phone.\nWin a goodie bag.", color = DeckColors.textPrimary, fontSize = 48.sp, lineHeight = 64.sp)
             }
             QrCode("${WEB_DEMOS_URL}#/w4b8gx", size = 600.dp)
+        }
+    }
+}
+
+/** Last slide: Lumeo, the speaker's own app. Feature graphic, what it does, QR to the site. */
+val lumeoSlide = Slide {
+    LiveSlide(title = "One more thing: Lumeo", subtitle = "my app · a voice-first second brain") {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(80.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                PhotoImage(
+                    resourcePath = "images/lumeo_feature.png",
+                    contentDescription = "Lumeo: thoughts in, illumination out",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)),
+                )
+                Gap(36.dp)
+                Caption("Speak your thoughts. AI turns them into notes,", color = DeckColors.textPrimary)
+                Caption("connects them, and finds new ideas.", color = DeckColors.textPrimary)
+                Gap(12.dp)
+                Caption("Android + iOS · Compose Multiplatform")
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                QrCode("https://lumeo-secondbrain.com", size = 460.dp)
+                Gap(24.dp)
+                Text("lumeo-secondbrain.com", color = DeckColors.textPrimary, fontSize = 34.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
     }
 }

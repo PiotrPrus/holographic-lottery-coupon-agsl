@@ -112,4 +112,4 @@ val theEndSlide = Slide {
     }
 }
 
-val outroSlides: List<Slide> = listOf(finaleSlide, tryItSlide("The whole card", "q5r1fy", note = "Sound on. Android also vibrates."), recapSlide, theEndSlide, prizesSlide)
+val outroSlides: List<Slide> = listOf(finaleSlide, tryItSlide("The whole card", "q5r1fy", note = "Sound on. Android also vibrates."), recapSlide, theEndSlide, prizesSlide, lumeoSlide)
