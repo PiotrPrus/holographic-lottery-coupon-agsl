@@ -2,7 +2,6 @@ package dev.piotrprus.holoscratch.presentation.slides
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.key
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -194,68 +193,38 @@ val foilBuildSlide = Slide(steps = HOLO_ALL_LAYERS) {
     }
 }
 
-private fun rainbowCode(oil: Boolean) = """
-float phase = p.y * 1.8 + roll * ${if (oil) "2.0" else "0.6"} - pitch * ${if (oil) "3.0" else "0.9"};
+private const val RAINBOW_CODE = """
+float phase = p.y * 1.8 + roll * 0.6 - pitch * 0.9;
 col = mix(col, rainbow(phase), band * 0.35);
 """
 
 /**
- * Rainbow speed, one moving piece at a time. 0 what phase is: just the colours, no foil ·
- * 1 the mouse adds to phase: the stripes slide · 2 the same colours on the foil, only where the
- * light hits (band) · 3 my first try, 2.0 and 3.0: the stripes race, an oil slick ·
- * 4 both foils side by side: light moves fast, colour crawls.
+ * Rainbow phase, all on one slide: the code, the colour wheel unrolled (one rainbow per 1.0),
+ * and two previews driven by the same mouse: only rainbow(phase), and the foil it ends up on.
  */
-val oilSlickSlide = Slide(steps = 4) {
-    val oil = step == 3
-    val rollGain = if (oil) 2f else 0.6f
-    val pitchGain = if (oil) 3f else 0.9f
-    LiveSlide(
-        title = "Rainbow speed",
-        subtitle = when (step) {
-            0 -> "phase picks the colour"
-            1 -> "the mouse moves the phase"
-            2 -> "on the foil: only where the light hits"
-            3 -> "my first try"
-            else -> "light moves fast, colour crawls"
-        },
-    ) { tilt ->
-        val left = remember { ScratchState() }
-        val right = remember { ScratchState() }
+val oilSlickSlide = Slide {
+    LiveSlide(title = "Rainbow phase", subtitle = "phase picks the colour") { tilt ->
+        val foil = remember { ScratchState() }
         Row(horizontalArrangement = Arrangement.spacedBy(50.dp)) {
             Column(Modifier.weight(1.1f)) {
-                MorphingCodeBlock(code = rainbowCode(oil), fontSize = 24.sp, modifier = Modifier.fillMaxWidth())
+                MorphingCodeBlock(code = RAINBOW_CODE, fontSize = 24.sp, modifier = Modifier.fillMaxWidth())
                 Gap(30.dp)
-                if (step == 0) {
-                    PhaseRuler(Modifier.fillMaxWidth().height(110.dp))
-                    Gap(24.dp)
-                }
-                when (step) {
-                    0 -> Caption("phase is a position on the colour wheel.\n0 = red · 0.5 = cyan · 1.0 = red again.\np.y * 1.8: top to bottom = 1.8 rainbows.", color = DeckColors.textPrimary)
-                    1 -> Caption("roll * 0.6: mouse from edge to edge adds 1.2.\nThe stripes slide by about one rainbow.", color = DeckColors.textPrimary)
-                    2 -> Caption("Same phase on the foil.\nband keeps the colour only near the light.", color = DeckColors.textPrimary)
-                    3 -> Caption("roll * 2.0: edge to edge adds 4.0 = 4 rainbows.\nA small move runs through every colour.", color = Danger)
-                    else -> Caption("Real foil: the reflection moves fast,\nthe colour changes slowly. Small numbers.", color = Good)
-                }
+                PhaseRuler(Modifier.fillMaxWidth().height(110.dp))
+                Gap(24.dp)
+                Caption(
+                    "phase is a position on the colour wheel:\n0 = red · 0.5 = cyan · 1.0 = red again.\n" +
+                        "p.y * 1.8: top to bottom = 1.8 rainbows.\n" +
+                        "roll * 0.6: tilting slides the stripes.\n" +
+                        "band keeps the colour only near the light.",
+                    color = DeckColors.textPrimary,
+                )
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(30.dp)) {
-                if (step < 4) {
-                    LabeledDemo("only rainbow(phase)", good = if (oil) false else null) {
-                        RainbowStripes(tilt, rollGain, pitchGain, Modifier.fillMaxWidth().height(if (step >= 2) 230.dp else 400.dp))
-                    }
-                    if (step >= 2) {
-                        LabeledDemo("on the foil", good = if (oil) false else null) {
-                            key(oil) {
-                                ScratchPanel(if (oil) left else right, { tilt.value }, oilSlick = oil, scratchable = false, modifier = Modifier.fillMaxWidth().height(230.dp))
-                            }
-                        }
-                    }
-                } else {
-                    LabeledDemo("my first try: 2.0, 3.0", good = false) {
-                        ScratchPanel(left, { tilt.value }, oilSlick = true, scratchable = false, modifier = Modifier.fillMaxWidth().height(260.dp))
-                    }
-                    LabeledDemo("three builds later: 0.6, 0.9", good = true) {
-                        ScratchPanel(right, { tilt.value }, scratchable = false, modifier = Modifier.fillMaxWidth().height(260.dp))
-                    }
+                LabeledDemo("only rainbow(phase)") {
+                    RainbowStripes(tilt, rollGain = 0.6f, pitchGain = 0.9f, Modifier.fillMaxWidth().height(260.dp))
+                }
+                LabeledDemo("on the foil") {
+                    ScratchPanel(foil, { tilt.value }, scratchable = false, modifier = Modifier.fillMaxWidth().height(260.dp))
                 }
             }
         }

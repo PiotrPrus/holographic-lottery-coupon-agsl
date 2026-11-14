@@ -85,12 +85,7 @@ Use portrait (9:19.5), muted, short loops of 5–15 s.
 - **First shader.** Pink box → gradient (uv) → uTilt, a uniform sent every frame: two numbers from −1 to 1, roll and pitch, made by the mouse for now → light: tilt 0 puts it in the middle, roll moves it left/right, pitch up/down (the cross marks it) → glow: 1 under the lamp, fading with distance; 6.0 = how tight; 0.35 = the dark grey.
 - **RuntimeShader.** The shader is a String → set the size once in the cache → set the tilt every frame.
 - **Foil build.** Grey → grain → lamp → rainbow → glitter → glare. A few lines per layer. Move the mouse on each step.
-- **Rainbow speed.** One moving piece at a time.
-  - Only `rainbow(phase)`, no foil: phase is a position on the colour wheel, 0 = red, 0.5 = cyan, 1.0 = red again (the ruler). `p.y * 1.8`: top to bottom of the card = 1.8 rainbows, so you see stripes.
-  - The mouse adds `roll * 0.6`: edge to edge adds 1.2, the stripes slide by about one rainbow.
-  - The same colours on the foil, under the stripes: `band` keeps them only near the light.
-  - My first try, 2.0 and 3.0: the stripes race, an oil slick on the foil.
-  - Both foils side by side: light moves fast, colour crawls.
+- **Rainbow phase.** One slide, no clicks. The code, the colour wheel unrolled from 0 to 2, and two previews on the same mouse: only `rainbow(phase)` (stripes) and the foil. phase is a position on the colour wheel: 0 = red, 0.5 = cyan, 1.0 = red again. `p.y * 1.8`: 1.8 rainbows top to bottom. `roll * 0.6`: tilting slides the stripes. `band` keeps the colour only near the light.
 - **Where does the shine live?** Problem first: one card, scratch it live; the rainbow stays on bare paper. Click: the before code, Shine() is its own layer on top of Foil, Clear runs inside Foil's layer, so it never erases the shine. Click: the code morphs, Shine() is gone and Foil paints holoBrush instead of Silver. Click: the fixed card appears under it, same finger on both. Reset clears both.
 
 - **The Book of Shaders.** Free, by Patricio Gonzalez Vivo and Jen Lowe. QR to thebookofshaders.com for anyone who wants to learn shaders properly.
