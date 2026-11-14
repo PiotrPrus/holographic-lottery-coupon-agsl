@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.sp
 
 /** 3. The holo foil shader alone, big, leaning with the phone. */
 @Composable
-fun FoilPage(onBack: () -> Unit) {
-    Page(3, "Foil", onBack) {
+fun FoilPage() {
+    Page("Holo foil") {
         Label("Tilt the phone. Light, rainbow and glitter follow roll and pitch.", color = Dim, size = 14.sp)
         Gap(24)
         HoloFoilPanel(
@@ -43,9 +43,9 @@ fun FoilPage(onBack: () -> Unit) {
 
 /** 4. Holo foil, scratched with the coin blade. */
 @Composable
-fun CoinScratchPage(onBack: () -> Unit) {
+fun CoinScratchPage() {
     val scratch = remember { ScratchState() }
-    Page(4, "Coin scratch", onBack) {
+    Page("Coin scratch") {
         Label("A coin edge, not a round pen: a thin blade turned across the stroke, wobbling every 9 px.", color = Dim, size = 14.sp)
         Gap(16)
         Coupon(Modifier.perspectiveTilt()) {
@@ -60,10 +60,10 @@ fun CoinScratchPage(onBack: () -> Unit) {
 
 /** 5. Everything: coin scratch, holo foil, dust, sound grains, vibration. */
 @Composable
-fun FinalPage(onBack: () -> Unit) {
+fun FinalPage() {
     val scratch = remember { ScratchState() }
     ScratchSound(scratch)
-    Page(5, "Final", onBack) {
+    Page("The whole card") {
         Label("Sound on. Scratch fresh foil to hear it and, on Android, feel it.", color = Dim, size = 14.sp)
         Gap(16)
         Coupon(

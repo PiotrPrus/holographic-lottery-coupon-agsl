@@ -66,9 +66,9 @@ private class PenScratch {
 }
 
 @Composable
-fun SimpleScratchPage(onBack: () -> Unit) {
+fun SimpleScratchPage() {
     val pen = remember { PenScratch() }
-    Page(1, "Simple scratch", onBack) {
+    Page("Simple scratch") {
         Label(
             "Grey paint in an offscreen layer. Your finger draws a path with BlendMode.Clear, which punches through to the prize.",
             color = Dim, size = 14.sp,
